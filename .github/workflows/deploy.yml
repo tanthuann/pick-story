@@ -1,0 +1,67 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Create production build config
+      run: |
+        cd frontend
+        # Create a production config with static export enabled
+        cat > next.config.prod.ts << 'EOF'
+        import type { NextConfig } from "next";
+        
+        const nextConfig: NextConfig = {
+          output: 'export',
+          trailingSlash: true,
+          images: {
+            unoptimized: true
+          },
+          distDir: 'out',
+          basePath: '/demo-la',
+          assetPrefix: '/demo-la',
+        };
+        
+        export default nextConfig;
+        EOF
+        
+        # Replace the config for production build
+        mv next.config.ts next.config.dev.ts
+        mv next.config.prod.ts next.config.ts
+
+    - name: Build frontend for static export
+      run: |
+        cd frontend
+        npm run build
+      env:
+        NODE_ENV: production
+        BACKEND_URL: https://your-backend-url.com
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./frontend/out

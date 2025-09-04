@@ -42,9 +42,12 @@ jobs:
         cd frontend
         npm ci
 
-    - name: Create production build config
+    - name: Remove API routes and create production build config
       run: |
         cd frontend
+        
+        # Remove API routes since they don't work with static export
+        rm -rf src/app/api
         
         # Create a production config with static export enabled
         cat > next.config.prod.ts << 'EOF'

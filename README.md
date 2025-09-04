@@ -133,10 +133,59 @@ BACKEND_URL=http://localhost:3001
 
 ## Deployment
 
-The project is configured for deployment to GitHub Pages using GitHub Actions. The workflow:
+### GitHub Pages (Static Demo)
 
-1. Builds the Next.js frontend as a static export
-2. Deploys to GitHub Pages automatically on push to main branch
+The project includes automated deployment to GitHub Pages for showcasing the application:
+
+**🚀 Live Demo:** `https://yourusername.github.io/demo-la/`
+
+#### Setup GitHub Pages Deployment:
+
+1. **Enable GitHub Pages:**
+   - Go to your repository Settings
+   - Navigate to "Pages" section
+   - Set Source to "GitHub Actions"
+
+2. **Configure Repository:**
+   - Ensure the repository name matches the `basePath` in the workflow
+   - Update the demo URL in `README.md` to match your GitHub username
+
+3. **Deploy:**
+   - Push to `main` or `master` branch
+   - GitHub Actions will automatically build and deploy
+   - Access your live demo at `https://yourusername.github.io/demo-la/`
+
+#### Features in Static Demo:
+- ✅ Fully functional UI with demo data
+- ✅ All components and interactions work
+- ✅ Responsive design and animations
+- ⚠️ Form submissions show success messages but don't persist data
+- ⚠️ Daily story picker works but resets on page refresh
+
+### Production Deployment (Full Features)
+
+For a production deployment with full backend functionality:
+
+1. **Deploy Backend:**
+   - Use services like Railway, Render, or Heroku
+   - Set up MongoDB Atlas or other cloud database
+   - Configure environment variables
+
+2. **Deploy Frontend:**
+   - Use Vercel, Netlify, or similar
+   - Configure `BACKEND_URL` environment variable
+   - Remove static export configuration
+
+3. **Environment Configuration:**
+   ```bash
+   # Backend
+   MONGODB_URI=your_production_mongodb_uri
+   PORT=3001
+   NODE_ENV=production
+   
+   # Frontend  
+   BACKEND_URL=https://your-backend-url.com
+   ```
 
 ## Daily Limit Feature
 

@@ -19,26 +19,17 @@ export default function StoryInput() {
     setMessage('')
 
     try {
-      const response = await fetch('/api/stories', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          content: content.trim(),
-          author: author.trim(),
-        }),
+      const { createStory } = await import('@/lib/api')
+      const result = await createStory({
+        title: title.trim(),
+        content: content.trim(),
+        author: author.trim(),
       })
 
-      if (response.ok) {
-        setMessage('Story saved successfully!')
-        setTitle('')
-        setContent('')
-        setAuthor('')
-      } else {
-        setMessage('Failed to save story. Please try again.')
-      }
+      setMessage(result.message || 'Story saved successfully!')
+      setTitle('')
+      setContent('')
+      setAuthor('')
     } catch {
       setMessage('An error occurred. Please try again.')
     } finally {

@@ -24,19 +24,16 @@ export default function StoryPicker() {
     setError('')
     
     try {
-      const response = await fetch('/api/stories/random')
-      
-      if (response.ok) {
-        const story = await response.json()
-        setPickedStory(story)
-        setShowReplyDialog(true)
-      } else if (response.status === 429) {
+      const { fetchRandomStory } = await import('@/lib/api')
+      const story = await fetchRandomStory()
+      setPickedStory(story)
+      setShowReplyDialog(true)
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'RATE_LIMITED') {
         setError('You have already picked a story today. Come back tomorrow!')
       } else {
         setError('Failed to pick a random story. Please try again.')
       }
-    } catch {
-      setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }

@@ -39,25 +39,16 @@ export default function ReplyDialog({ story, open, onOpenChange, onSuccess }: Re
     setError('')
 
     try {
-      const response = await fetch('/api/replies', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          storyId: story._id,
-          content: replyContent.trim(),
-          author: replyAuthor.trim(),
-        }),
+      const { createReply } = await import('@/lib/api')
+      await createReply({
+        storyId: story._id,
+        content: replyContent.trim(),
+        author: replyAuthor.trim(),
       })
 
-      if (response.ok) {
-        setReplyContent('')
-        setReplyAuthor('')
-        onSuccess()
-      } else {
-        setError('Failed to submit reply. Please try again.')
-      }
+      setReplyContent('')
+      setReplyAuthor('')
+      onSuccess()
     } catch {
       setError('An error occurred. Please try again.')
     } finally {

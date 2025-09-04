@@ -2,9 +2,20 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
+  workflow_dispatch: # Allow manual triggering
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -21,6 +32,11 @@ jobs:
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
 
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      with:
+        static_site_generator: next
+
     - name: Install frontend dependencies
       run: |
         cd frontend
@@ -29,6 +45,7 @@ jobs:
     - name: Create production build config
       run: |
         cd frontend
+        
         # Create a production config with static export enabled
         cat > next.config.prod.ts << 'EOF'
         import type { NextConfig } from "next";
@@ -41,27 +58,90 @@ jobs:
           },
           distDir: 'out',
           basePath: '/demo-la',
-          assetPrefix: '/demo-la',
+          assetPrefix: '/demo-la/',
+          env: {
+            NEXT_PUBLIC_BASE_PATH: '/demo-la',
+          },
         };
         
         export default nextConfig;
         EOF
         
-        # Replace the config for production build
-        mv next.config.ts next.config.dev.ts
+        # Backup original config and use production config
+        cp next.config.ts next.config.dev.ts
         mv next.config.prod.ts next.config.ts
 
-    - name: Build frontend for static export
+    - name: Create static API responses
+      run: |
+        cd frontend
+        mkdir -p public/api/stories public/api/replies
+        
+        # Create mock data for static deployment (since API routes won't work)
+        cat > public/api/stories/stories.json << 'EOF'
+        {
+          "stories": [
+            {
+              "_id": "demo1",
+              "title": "Welcome to Pick Story",
+              "content": "This is a demo story to showcase the Pick Story application. In the full version, you would connect this to a real backend API with MongoDB. Stories can be much longer and more detailed than this example.",
+              "author": "Demo User",
+              "replyCount": 2,
+              "createdAt": "2024-01-01T00:00:00.000Z"
+            },
+            {
+              "_id": "demo2", 
+              "title": "How to Use This App",
+              "content": "You can write your own stories, read stories from others, and even get a random story pick once per day. The daily limit helps create anticipation and makes each story special.",
+              "author": "App Guide",
+              "replyCount": 1,
+              "createdAt": "2024-01-02T00:00:00.000Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "totalPages": 1
+        }
+        EOF
+        
+        cat > public/api/replies/demo-replies.json << 'EOF'
+        {
+          "story": {
+            "_id": "demo1",
+            "title": "Welcome to Pick Story", 
+            "content": "This is a demo story to showcase the Pick Story application.",
+            "author": "Demo User",
+            "createdAt": "2024-01-01T00:00:00.000Z"
+          },
+          "replies": [
+            {
+              "_id": "reply1",
+              "content": "Great introduction to the app! Looking forward to using it.",
+              "author": "Reader 1",
+              "createdAt": "2024-01-01T01:00:00.000Z"
+            },
+            {
+              "_id": "reply2", 
+              "content": "This seems like a wonderful way to connect with others through storytelling.",
+              "author": "Reader 2",
+              "createdAt": "2024-01-01T02:00:00.000Z"
+            }
+          ]
+        }
+        EOF
+
+    - name: Build frontend for GitHub Pages
       run: |
         cd frontend
         npm run build
       env:
         NODE_ENV: production
-        BACKEND_URL: https://your-backend-url.com
+        NEXT_PUBLIC_IS_STATIC_EXPORT: "true"
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./frontend/out
 
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./frontend/out
+      id: deployment
+      uses: actions/deploy-pages@v4

@@ -11,9 +11,20 @@ import { RepliesModule } from './replies/replies.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/pick-story'
-    ),
+    MongooseModule.forRootAsync({
+      useFactory: () => ({
+        uri: process.env.MONGODB_URI || 'mongodb://pickstory_user:pickstory_password@localhost:27017/pick-story?authSource=pick-story',
+        connectionFactory: (connection) => {
+          connection.on('connected', () => {
+            console.log('MongoDB connected successfully');
+          });
+          connection.on('error', (error: any) => {
+            console.error('MongoDB connection error:', error);
+          });
+          return connection;
+        },
+      }),
+    }),
     StoriesModule,
     RepliesModule,
   ],

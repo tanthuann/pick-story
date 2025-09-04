@@ -36,11 +36,9 @@ export default function StoriesDisplay() {
 
   const fetchStories = async () => {
     try {
-      const response = await fetch('/api/stories')
-      if (response.ok) {
-        const data = await response.json()
-        setStories(data.stories || [])
-      }
+      const { fetchStories: apiFetchStories } = await import('@/lib/api')
+      const data = await apiFetchStories()
+      setStories(data.stories || [])
     } catch (error) {
       console.error('Failed to fetch stories:', error)
     } finally {
@@ -51,14 +49,12 @@ export default function StoriesDisplay() {
   const fetchStoryWithReplies = async (storyId: string) => {
     setLoadingReplies(true)
     try {
-      const response = await fetch(`/api/stories/${storyId}/replies`)
-      if (response.ok) {
-        const data = await response.json()
-        setSelectedStory({
-          ...data.story,
-          replies: data.replies
-        })
-      }
+      const { fetchStoryWithReplies: apiFetchStoryWithReplies } = await import('@/lib/api')
+      const data = await apiFetchStoryWithReplies(storyId)
+      setSelectedStory({
+        ...data.story,
+        replies: data.replies
+      })
     } catch (error) {
       console.error('Failed to fetch story with replies:', error)
     } finally {

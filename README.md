@@ -44,31 +44,78 @@ demo-la/
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB (local or cloud)
+- Docker & Docker Compose
+- Git
 
-### Backend Setup
+### Quick Start
+
+1. **Start MongoDB with Docker:**
+```bash
+./scripts/start-mongo.sh
+```
+
+2. **Start Backend:**
 ```bash
 cd backend
 npm install
 npm run start:dev
 ```
 
-### Frontend Setup
+3. **Start Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
+4. **Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+
+### MongoDB Management
+
+**Start MongoDB:**
+```bash
+./scripts/start-mongo.sh
+```
+
+**Stop MongoDB:**
+```bash
+./scripts/stop-mongo.sh
+```
+
+**Connect to MongoDB shell:**
+```bash
+docker exec -it pick-story-mongodb mongosh pick-story -u pickstory_user -p pickstory_password
+```
+
+**View MongoDB logs:**
+```bash
+docker-compose logs mongodb
+```
+
+**Reset all data:**
+```bash
+docker-compose down -v
+```
+
 ## Environment Variables
 
 ### Backend (.env)
-```
-MONGODB_URI=mongodb://localhost:27017/pick-story
+```bash
+# MongoDB Configuration - Docker Local Setup
+MONGODB_URI=mongodb://pickstory_user:pickstory_password@localhost:27017/pick-story?authSource=pick-story
+
+# Application Configuration
+PORT=3001
+NODE_ENV=development
+
+# CORS Configuration
+FRONTEND_URL=http://localhost:3000
 ```
 
 ### Frontend (.env.local)
-```
+```bash
 BACKEND_URL=http://localhost:3001
 ```
 

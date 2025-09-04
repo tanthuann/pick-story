@@ -57,10 +57,10 @@ jobs:
             unoptimized: true
           },
           distDir: 'out',
-          basePath: '/demo-la',
-          assetPrefix: '/demo-la/',
+          basePath: '/pick-story',
+          assetPrefix: '/pick-story/',
           env: {
-            NEXT_PUBLIC_BASE_PATH: '/demo-la',
+            NEXT_PUBLIC_BASE_PATH: '/pick-story',
           },
         };
         
